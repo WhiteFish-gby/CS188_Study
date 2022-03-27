@@ -17,6 +17,7 @@ In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
 
+from ast import NodeTransformer
 import util
 
 
@@ -89,22 +90,101 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
-    util.raiseNotDefined()
+    # 创建空集合closed 用于存放已经搜索过的节点
+    closed = set()
+    # 创建待搜索的节点集合fringe，根据深度优先算法的特点，应该使用栈作为其数据结构
+    fringe = util.Stack()  # Stack到底是个什么类型的container,取决于传入的变量
+    # 并将搜索问题的初始状态作为第一个待搜索节点添加到fringe集合中
+    node = {"state": problem.getStartState(), "path": []}
+    # "Push node onto the stack"
+    fringe.push(node)
+    # 构建循环进行搜索
+    while True:
+        # 如果fringe集合为空，表示已经把所有待搜索的节点都搜索过了，但依然没有找到可行的行动序列，则搜索失败
+        if fringe.isEmpty():
+            return None
+        # 如果上面的步骤不成立，表示fringe中还存在待搜索的节点，则从fringe取出下一个待搜索节点
+        node = fringe.pop()
+        # 判断取出的节点是不是目标节点，如果是的话，表示搜索成功，返回到达该节点的行动序列即可
+        if problem.isGoalState(node["state"]):
+            return node["path"]
+        # 如果当前节点不是目标节点，且节点信息不在已经搜索过的节点
+        elif node["state"] not in closed:
+            # 将当前节点添加到已搜索的节点集合closed中
+            closed.add(node["state"])
+            # 展开当前节点的后续节点，并对这些节点进行搜索
+            for nextnode in problem.getSuccessors(node["state"]):
+                # 构造后续节点的相关信息，并将其添加到待搜索节点集合fringe中
+                nextnode = {"state": nextnode[0],
+                            "path": node["path"]+[nextnode[1]]}
+                fringe.push(nextnode)
 
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # 创建空集合closed用于存放已经搜索过的节点
+    closed = set()
+    # 创建待搜索的节点集合fringe，根据广度优先搜索算法的特点，应该使用队列作为其数据结构
+    fringe = util.Queue()
+    # 并将搜索问题的初始状态作为第一个待搜索节点添加到fringe集合中
+    # 每一个节点中除了当前的状态，还需要保存到达此节点所需执行的行动序列，即变量path中存放的内容
+    node = {"state": problem.getStartState(), "path": []}
+    fringe.push(node)
+    # 构建循环进行搜索
+    while True:
+        # 如果fringe集合为空，表示已经把所有待搜索的节点都搜索过了，但依然没有找到可行的行动序列，则搜索失败
+        if fringe.isEmpty():
+            return None
+        # 如果上面的步骤不成立，表示fringe中还存在待搜索的节点，则从fringe中取出下一个待搜索节点
+        node = fringe.pop()
+        # 判断取出的节点是不是目标节点，如果是的话，表示搜索成功，返回到达该节点的行动序列即可
+        if problem.isGoalState(node["state"]):
+            return node["path"]
+        # 如果当前节点不是目标节点，且节点信息不在已经搜索过的节点集合closed中
+        elif node["state"] not in closed:
+            # 将当前节点添加到已搜索的节点集合closed中
+            closed.add(node["state"])
+            # 展开当前节点的后续节点，并对这些节点进行遍历搜索
+            for nextnode in problem.getSuccessors(node["state"]):
+                # 构造后续节点的相关信息，并将其添加到待搜索节点集合fringe中
+                nextnode = {"state": nextnode[0],
+                            "path": node["path"]+[nextnode[1]]}
+                fringe.push(nextnode)
 
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # 创建空集合closed用于存放已经搜索过的节点
+    closed = set()
+    # 创建待搜索的节点集合fringe，根据一致代价搜索算法的特点，应该使用优先级队列作为其数据结构
+    fringe = util.PriorityQueue()
+    # 并将搜索问题的初始状态作为第一个待搜索节点添加到fringe集合中
+    # 每一个节点中除了当前的状态，还需要保存到达此节点所需执行的行动序列和代价，即变量path和cost中存放的内容
+    node = {"state": problem.getStartState(), "path": [], "cost": 0}
+    fringe.push(node, node["cost"])
+    # 构建循环进行搜索
+    while True:
+        # 如果fringe集合为空，表示已经把所有待搜索的节点都搜索过了，但依然没有找到可行的行动序列，则搜索失败
+        if fringe.isEmpty():
+            return None
+        # 如果上面的步骤不成立，表示fringe中还存在待搜索的节点，则从fringe中取出下一个待搜索节点
+        node = fringe.pop()
+        # 判断取出的节点是不是目标节点，如果是的话，表示搜索成功，返回到达该节点的行动序列即可
+        if problem.isGoalState(node["state"]):
+            return node["path"]
+        # 如果当前节点不是目标节点，且节点信息不在已经搜索过的节点集合closed中
+        elif node["state"] not in closed:
+            # 将当前节点添加到已搜索的节点集合closed中
+            closed.add(node["state"])
+            # 展开当前节点的后续节点，并对这些节点进行遍历搜索
+            for nextnode in problem.getSuccessors(node["state"]):
+                # 构造后续节点的相关信息，并将其添加到待搜索节点集合fringe中
+                nextnode = {"state": nextnode[0],
+                            "path": node["path"]+[nextnode[1]],
+                            "cost": node["cost"]+nextnode[2]}
+                fringe.update(nextnode, nextnode["cost"])
 
 
 def nullHeuristic(state, problem=None):
@@ -118,10 +198,38 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # 创建空集合closed用于存放已经搜索过的节点
+    closed = set()
+    # 创建待搜索的节点集合fringe，根据统一代价搜索算法的特点，应该使用优先级队列作为其数据结构
+    fringe = util.PriorityQueue()
+    # 并将搜索问题的初始状态作为第一个待搜索节点添加到fringe集合中
+    # 每一个节点中除了当前的状态，还需要保存到达此节点所需执行的行动序列和代价，即变量path和cost中存放的内容
+    node = {"state": problem.getStartState(), "path": [], "cost": 0}
+    fringe.push(node, node["cost"]+heuristic(node["state"], problem))
+    # 构建循环进行搜索
+    while True:
+        # 如果fringe集合为空，表示已经把所有待搜索的节点都搜索过了，但依然没有找到可行的行动序列，则搜索失败
+        if fringe.isEmpty():
+            return None
+        # 如果上面的步骤不成立，表示fringe中还存在待搜索的节点，则从fringe中取出下一个待搜索节点
+        node = fringe.pop()
+        # 判断取出的节点是不是目标节点，如果是的话，表示搜索成功，返回到达该节点的行动序列即可
+        if problem.isGoalState(node["state"]):
+            return node["path"]
+        # 如果当前节点不是目标节点，且节点信息不在已经搜索过的节点集合closed中
+        elif node["state"] not in closed:
+            # 将当前节点添加到已搜索的节点集合closed中
+            closed.add(node["state"])
+            # 展开当前节点的后续节点，并对这些节点进行遍历搜索
+            for nextnode in problem.getSuccessors(node["state"]):
+                # 构造后续节点的相关信息，并将其添加到待搜索节点集合fringe中
+                nextnode = {"state": nextnode[0],
+                            "path": node["path"]+[nextnode[1]],
+                            "cost": node["cost"]+nextnode[2]}
+                fringe.update(
+                    nextnode, nextnode["cost"]+heuristic(nextnode["state"], problem))
 
 
-# Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
