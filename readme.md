@@ -9,7 +9,8 @@ conda create --name cs188 python=3.6
 conda activate cs188
 ```
 ## P1 Search
-
+### Graph Search Pseudo-Code
+![image](Image/GraphSearchPseudo-code.png)
 ### DFS(Depth-First Search)
 Time saving(maybe);  
 stick to one's ways(提条路走到黑);  
