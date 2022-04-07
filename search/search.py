@@ -96,7 +96,7 @@ def depthFirstSearch(problem):
     fringe = util.Stack()  # Stack到底是个什么类型的container,取决于传入的变量
     # 并将搜索问题的初始状态作为第一个待搜索节点添加到fringe集合中
     node = {"state": problem.getStartState(), "path": []}
-    # "Push node onto the stack"
+    # "Push node onto the stack"初始化
     fringe.push(node)
     # 构建循环进行搜索
     while True:
