@@ -37,9 +37,15 @@ Time Long;   &nbsp;optimal solution
 ![image](https://github.com/WhiteFish-gby/CS188_Study/blob/master/Image/bfs.png)
 
 ### UCS(Uniform Cost Search)
-optimized form BFS  
+optimized form BFS    
+UCS是BFS的优化版，即我考虑了到达下一个节点的代价（cost）,我会优先选取cost最小的node  
+实现思路：没啥实现思路，cs188已经把PriorityQueue这个class数据结构写好的，我们只需要调用就好了（ps：不是自己写的，感觉还是不太踏实）  
+优点：与BFS相比不再是简单的找到target目标，而是将问题更加实际化考虑了行动成本
+
 ![image](https://github.com/WhiteFish-gby/CS188_Study/blob/master/Image/ucs.png)
+
 ### Greedy Search
+
 ![image](https://github.com/WhiteFish-gby/CS188_Study/blob/master/Image/greedy.png)
 ### A\* Search
 ![image](https://github.com/WhiteFish-gby/CS188_Study/blob/master/Image/Axing.png)
