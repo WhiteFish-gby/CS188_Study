@@ -43,11 +43,21 @@ UCS是BFS的优化版，即我考虑了到达下一个节点的代价（cost）,
 优点：与BFS相比不再是简单的找到target目标，而是将问题更加实际化考虑了行动成本
 
 ![image](https://github.com/WhiteFish-gby/CS188_Study/blob/master/Image/ucs.png)
+---
+下面是**Search Heuristics（启发式搜索）**  
+A heuristic is:  
+A function that estimates how close a state is to a goal    
+- Designed for a particular search problem
+- Examples: Manhattan distance, Euclidean distance for pathing  
 
+
+通俗来讲，大概就是我在判断时需要判断该node到target node之间的距离，然后取一个距离最短的node
 ### Greedy Search
-
+Strategy: expand a node that you think is closest to a goal state
+这里只学了方法，没写具体实现
 ![image](https://github.com/WhiteFish-gby/CS188_Study/blob/master/Image/greedy.png)
 ### A\* Search
+
 ![image](https://github.com/WhiteFish-gby/CS188_Study/blob/master/Image/Axing.png)
 
 ## P2 Multi-Agent Search
