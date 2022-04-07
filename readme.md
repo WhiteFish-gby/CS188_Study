@@ -12,9 +12,14 @@ conda activate cs188
 ### Graph Search Pseudo-Code
 ![image](Image/GraphSearchPseudo-code.png)
 ### DFS(Depth-First Search)
-Time saving(maybe);  
-stick to one's ways(提条路走到黑);  
-Non-optimal solution  
+Time saving(maybe);  &nbsp;Non-optimal solution  
+实现思路：按照last-in-first-out(LIFO)的stack容器规则顺序pop出所需的node，然后对node进行判断，如果该node是target node,那么我就记录（返回）到达该node的path  
+缺点：我最终得到的path不一定是最短路径
+感想：在该课程中，其实基本框架已经搭好，比如说   
+- stack容器，
+- 判断是否为target node，
+- A successor function（这里我的理解是获得我下一步有哪些node可以到达，即两个信息，一是node的位置坐标（state），二是我到达的方式，一般是位移方向，这里指的是东西南北）
+  
 ![image](https://github.com/WhiteFish-gby/CS188_Study/blob/master/Image/dfs.png)
 
 ### BFS(Breadth-First Search)
