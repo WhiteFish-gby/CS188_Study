@@ -4,7 +4,7 @@
 
 ### DFS(Depth-First Search)
 
-https://github.com/WhiteFish-gby/CS188_Study/blob/master/Image/dfs.png
+![image](https://github.com/WhiteFish-gby/CS188_Study/blob/master/Image/dfs.png)
 
 ### BFS(Breadth-First Search)
 
