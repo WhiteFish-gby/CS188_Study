@@ -99,7 +99,7 @@ Heuristic: estimate of distance to nearest goal for each state
 ![image](Image/greedy.png)
 ### A\* Search
 Combining UCS and Greedy  
-
+A\*的本质是在ucs代价的基础上增加了启发值作为奖惩条件。
 ![image](Image/Axing.png)
 A\* 函数接口为 **def aStarSearch(problem, heuristic=nullHeuristic):**  
 #### 针对SearchAgent默认选用的PositionSearchProblem问题的A \*测试方法
