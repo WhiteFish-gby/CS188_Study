@@ -140,7 +140,7 @@ Note: AStarCornersAgent is a shortcut for
 
 FoodSearchProblem具体是什么查看searchAgents.py文件里的FoodSearchProblem类
 #### 针对SearchAgent选用FoodSearchProblem问题的测试（地图为testSearch）
-testSearch似乎在ucs_4_testSearch.test文件里有描述，还不太懂它的源代码在哪里
+~~testSearch似乎在ucs_4_testSearch.test文件里有描述，还不太懂它的源代码在哪里~~
 使用A \* 解决
 ```bash
 python pacman.py -l testSearch -p AStarFoodSearchAgent
@@ -152,20 +152,21 @@ Note: AStarCornersAgent is a shortcut for
 You should find that UCS starts to slow down even for the seemingly simple tinySearch.
 对于该问题A \* 明显优于ucs。
 #### 针对SearchAgent选用FoodSearchProblem问题的测试（地图为trickySearch）
-trickySearch似乎在food_heuristic_grade_tricky.test文件里有描述，还不太懂它的源代码在哪里
+~~trickySearch似乎在food_heuristic_grade_tricky.test文件里有描述，还不太懂它的源代码在哪里~~
 ```bash
 python pacman.py -l trickySearch -p AStarFoodSearchAgent
 ```
 由命令行可知不同的search问题 ，A \* 需要准备不同的heuristic(启发)方法
+
 ---
-以上所有的search均以获得最优解（步数最少为目的，然鹅，有时候我们并不只追求极致，对运行速度也有一定的要求，这时需要引入一个新的方法SearchAgent（次优） Search。
+以上所有的search均以获得最优解（步数最少）为目的，然鹅，有时候我们并不只追求极致，对运行速度也有一定的要求，这时需要引入一个新的方法SearchAgent（次优） Search。
 ### Suboptimal Search
 Sometimes, even with A* and a good heuristic, finding the optimal path through all the dots is hard. In these cases, we’d still like to find a reasonably good path, quickly. In this section, you’ll write an agent that always greedily eats the closest dot
 测试方法
 ```bash
 python pacman.py -l bigSearch -p ClosestDotSearchAgent -z .5
 ```
-本质上采用了ucs的方法来实现
+本质上采用了ucs的方法来实现？待研究
 ## P2 Multi-Agent Search
 ### Reflex Agent
 ### Minimax
