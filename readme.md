@@ -44,6 +44,39 @@ UCS是BFS的优化版，即我考虑了到达下一个节点的代价（cost）,
 缺点：还是慢
 
 ![image](Image/ucs.png)
+### 上述算法在该项目中的测试方法
+命令行使用，默认使用dfs的方法
+```bash
+python pacman.py -l bigMaze -z .5 -p SearchAgent
+```
+这是SearchAgent的描述
+```python
+class SearchAgent(Agent):
+    """
+    This very general search agent finds a path using a supplied search
+    algorithm for a supplied search problem, then returns actions to follow that
+    path.
+
+    As a default, this agent runs DFS on a PositionSearchProblem to find
+    location (1,1)
+
+    Options for fn include:
+      depthFirstSearch or dfs
+      breadthFirstSearch or bfs
+
+
+    Note: You should NOT change any code in SearchAgent
+    """
+```
+使用bfs的方法
+```bash
+python pacman.py -l bigMaze -p SearchAgent -a fn=bfs -z .5
+```
+使用ucs的方法
+```bash
+python pacman.py -l mediumMaze -p SearchAgent -a fn=ucs
+```
+
 ---
 下面是**Search Heuristics（启发式搜索）**  
 A heuristic is:  
@@ -69,13 +102,70 @@ Combining UCS and Greedy
 
 ![image](Image/Axing.png)
 A\* 函数接口为 **def aStarSearch(problem, heuristic=nullHeuristic):**  
-该算法功能并不局限于简单的查找，所谓简单的查找，即上述我们使用DFS、BFS、UCS方法解决的问题：Finding a Fixed Food Dot。这种问题我们只需要知道food dot的坐标，拥有探查可走的路的传感器，就可以通过算法来实现查找。  
+#### 针对SearchAgent默认选用的PositionSearchProblem问题的A \*测试方法
+```
+python pacman.py -l bigMaze -z .5 -p SearchAgent -a fn=astar,heuristic=manhattanHeuristic
+```
+该算法功能并不局限于普通的查找，所谓普通的查找，即上述我们使用DFS、BFS、UCS方法解决的serchagent中表述的PositionSearchProblem问题：Finding a Fixed Food Dot。这种问题我们只需要知道food dot的坐标，拥有探查可走的路的传感器，就可以通过算法来实现查找。  
+
+&nbsp;
+
+PositionSearchProblem具体是什么查看searchAgents.py文件里的PositionSearchProblem类。(虽然我也没认真看)
+&nbsp;
 
 下面，我们引入一个新的search问题:corner problem。  
 Our new search problem is to find the shortest path through the maze that touches all four corners。 
 
 对于这个问题，A \* 算法更具优势。
 
+
+CornersProblem具体是什么查看searchAgents.py文件里的CornersProblem类
+
+#### 针对SearchAgent选用CornersProblem问题的测试
+命令行，采用bfs解决
+```bash
+python pacman.py -l mediumCorners -p SearchAgent -a fn=bfs,prob=CornersProblem
+```
+采用A \*解决
+```bash
+python pacman.py -l mediumCorners -p AStarCornersAgent -z 0.5
+```
+Note: AStarCornersAgent is a shortcut for
+```
+-p SearchAgent -a fn=aStarSearch,prob=CornersProblem,heuristic=cornersHeuristic
+```
+&nbsp;
+
+继续引入新的问题FoodSearchProblem：eating all the Pacman food in as few steps as possible.
+
+FoodSearchProblem具体是什么查看searchAgents.py文件里的FoodSearchProblem类
+#### 针对SearchAgent选用FoodSearchProblem问题的测试（地图为testSearch）
+testSearch似乎在ucs_4_testSearch.test文件里有描述，还不太懂它的源代码在哪里
+使用A \* 解决
+```bash
+python pacman.py -l testSearch -p AStarFoodSearchAgent
+```
+Note: AStarCornersAgent is a shortcut for
+```
+-p SearchAgent -a fn=astar,prob=FoodSearchProblem,heuristic=foodHeuristic
+```
+You should find that UCS starts to slow down even for the seemingly simple tinySearch.
+对于该问题A \* 明显优于ucs。
+#### 针对SearchAgent选用FoodSearchProblem问题的测试（地图为trickySearch）
+trickySearch似乎在food_heuristic_grade_tricky.test文件里有描述，还不太懂它的源代码在哪里
+```bash
+python pacman.py -l trickySearch -p AStarFoodSearchAgent
+```
+由命令行可知不同的search问题 ，A \* 需要准备不同的heuristic(启发)方法
+---
+以上所有的search均以获得最优解（步数最少为目的，然鹅，有时候我们并不只追求极致，对运行速度也有一定的要求，这时需要引入一个新的方法SearchAgent（次优） Search。
+### Suboptimal Search
+Sometimes, even with A* and a good heuristic, finding the optimal path through all the dots is hard. In these cases, we’d still like to find a reasonably good path, quickly. In this section, you’ll write an agent that always greedily eats the closest dot
+测试方法
+```bash
+python pacman.py -l bigSearch -p ClosestDotSearchAgent -z .5
+```
+本质上采用了ucs的方法来实现
 ## P2 Multi-Agent Search
 ### Reflex Agent
 ### Minimax
