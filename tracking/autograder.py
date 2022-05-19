@@ -142,7 +142,7 @@ def loadModuleString(moduleSource):
 import py_compile
 
 def loadModuleFile(moduleName, filePath):
-    with open(filePath, 'r') as f:
+    with open(filePath, 'rb') as f:
         return imp.load_module(moduleName, f, "%s.py" % moduleName, (".py", "r", imp.PY_SOURCE))
 
 

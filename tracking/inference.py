@@ -75,7 +75,15 @@ class DiscreteDistribution(dict):
         {}
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # 归一化主要是为了数据处理方便提出来的，把数据映射到0～1范围之内处理，更加便捷快速。
+        # 可以把归一化理解为计算某个样本在所有样本中出现的概率
+        # 要进行归一化，首先需要求总体样本数量total
+        total = self.total()
+        # 根据注释的提醒，total为0的时候不要做任何事情
+        if total!=0:
+            # 如果total不为0，则进行遍历进行归一化
+            for k,v in self.items():
+                self[k] = v/total
 
     def sample(self):
         """
@@ -99,7 +107,19 @@ class DiscreteDistribution(dict):
         0.0
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # 所谓采样，就是根据样本出现的概率，生成单个样本
+        # 根据幻灯的内容和上述注释文档，我们可以先取[0,1)之间的随机数u
+        # 然后根据各个样本出现的概率，规定各个样本在[0,1)上的对应区间
+        # 然后，只需判断随机数u落在哪一个区间内，即可返回对应的样本值
+        u = random.random()
+        # 使用变量alpha表示区间的下限
+        alpha = 0.0
+        for key,value in self.items():
+            # 当随机数u落在了指定的离散分布区间内，返回对应的key即样本
+            if alpha <= u < alpha+(value/self.total()):
+                return key
+            # 为了得到下一个分布区间的下限，需要不断地更新alpha
+            alpha += value/self.total()
 
 
 class InferenceModule:
@@ -169,7 +189,24 @@ class InferenceModule:
         Return the probability P(noisyDistance | pacmanPosition, ghostPosition).
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # 本函数主要目的是计算P(noisyDistance | pacmanPosition, ghostPosition)
+        # 根据题目描述，需要判定鬼怪是否已经被送到jail中
+        if ghostPosition == jailPosition:
+            # 该分支表示鬼怪在监狱中，即noisyDistance为None的概率为100%
+            if noisyDistance == None:
+                return 1.0
+            # 该分支表示鬼怪在监狱中，即noisyDistance为None的概率为0%
+            else:
+                return 0.0
+        else:
+            # 该分支表示鬼怪不在监狱中，即noisyDistance为None的概率为0%
+            if noisyDistance == None:
+                return 0.0
+            # 该分支表示鬼怪不在监狱中，返回在当前状态下，noisyDistance的概率
+            else:
+                trueDistance = manhattanDistance(pacmanPosition, ghostPosition)
+                return busters.getObservationProbability(noisyDistance, trueDistance)
+
 
     def setGhostPosition(self, gameState, ghostPosition, index):
         """
@@ -277,8 +314,22 @@ class ExactInference(InferenceModule):
         position is known.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
-
+        # 本题的要求就是编写不断更新置信网络的函数
+        # 先获取旧的置信网络数据(其本质就是一个离散分布)
+        oldPD = self.beliefs
+        # 获取吃豆人的位置
+        pacmanPosition = gameState.getPacmanPosition()
+        # 获得当前地图中监狱的位置
+        jailPosition = self.getJailPosition()
+        # 建立新的离散分布对象以存储新的置信网络数据
+        newPD = DiscreteDistribution()
+        # 遍历所有鬼怪可能出现的位置，并实现精确推理的核心步骤
+        for ghostPosition in self.allPositions:
+            newPD[ghostPosition] = self.getObservationProb(observation,
+                                pacmanPosition, ghostPosition, jailPosition) * oldPD[ghostPosition]
+        # 将新的置信网络更新到self.beliefs中
+        self.beliefs = newPD
+        # 最后，将置信网络进行归一化，这一步是最重要的，千万不能忘
         self.beliefs.normalize()
 
     def elapseTime(self, gameState):
@@ -291,7 +342,24 @@ class ExactInference(InferenceModule):
         current position is known.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # 此题的测试用例1是随机走的Ghost，测试用例2和3是一直往下走的Ghost
+        # 获取旧的置信网络数据(其实就是一个离散分布)
+        oldPD = self.beliefs
+        # 建立新的离散分布对象以存储新的置信网络数据
+        newPD = DiscreteDistribution()
+        # 遍历所有鬼怪所有可能出现的位置，将每一个可能出现的位置都作为初始位置进行计算
+        for oldPos in self.allPositions:
+            # 根据Time Elapse算法内容，我们得到接下来鬼怪可能存在位置的离散分布
+            newPosDist = self.getPositionDistribution(gameState, oldPos)
+            # 新的置信网络中的数据需要将所有从oldPos出发达到newPos的可能性进行累加
+            for newPos in self.allPositions:
+                # 考虑到从oldPos到达newPos的概率可能为0，我们可以在这里做一些优化
+                if newPosDist[newPos]>0:
+                    newPD[newPos] += newPosDist[newPos]*oldPD[oldPos]
+        # 将新的置信网络更新到self.beliefs中
+        self.beliefs = newPD
+        # 最后，将置信网络进行归一化
+        self.beliefs.normalize()
 
     def getBeliefDistribution(self):
         return self.beliefs
@@ -318,7 +386,13 @@ class ParticleFilter(InferenceModule):
         """
         self.particles = []
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # 所谓样本的初始化，就是将一堆样本放到给定的空间中
+        # 假设空间范围为[1,10]，现在有1000个样本，如果平均分布，那么1到10各取100次就是这个采样分布，形如：
+        # [1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,……,7,8,9,10,1,2,3,4,5,6,7,8,9,10]
+        # 结合当前的实际问题，鬼怪可能存在的所有位置就是此题的样本空间
+        self.particles += self.legalPositions*(self.numParticles//len(self.legalPositions))
+        # 还要考虑特殊情况：样本总数不能整除空间尺寸，比如空间范围为[1,10]，但是样本数量为95
+        self.particles += self.legalPositions[:(self.numParticles%len(self.legalPositions))]
 
     def observeUpdate(self, observation, gameState):
         """
@@ -333,7 +407,25 @@ class ParticleFilter(InferenceModule):
         the DiscreteDistribution may be useful.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # 获取吃豆人的位置
+        pacmanPosition = gameState.getPacmanPosition()
+        # 获得当前地图中监狱的位置
+        jailPosition = self.getJailPosition()
+        # 建立新的离散分布对象以存储新的置信网络数据
+        newPD = DiscreteDistribution()
+        # 本算法通过观察样本出现的概率，更新置信网络中的数据
+        # 与精确推理不同，计算中不需要用到oldPD，即旧的置信网络的值
+        for ghostPosition in self.particles:
+            newPD[ghostPosition] += \
+                self.getObservationProb(observation, pacmanPosition, ghostPosition, jailPosition)
+        # 根据注释的提示，需要考虑特殊情况，即置所有样本的概率总和为0，就调用初始化方法
+        if newPD.total()==0:
+            self.initializeUniformly(gameState)
+        else:
+            # 最后，将置信网络进行归一化
+            newPD.normalize()
+            # 再次生成新的样本(因为置信网络中的数据发生了变化，所以必须重新采样，以更新置信网络)
+            self.particles = [newPD.sample() for _ in range(self.numParticles)]
 
     def elapseTime(self, gameState):
         """
@@ -341,7 +433,20 @@ class ParticleFilter(InferenceModule):
         gameState.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        PosDist = {}
+        # 基本思想就是将下一步鬼怪可能出现位置作为样本按照给定的离散分布规律放在self.particles中
+        # 与之前一样，此题的测试用例1是随机走的Ghost，测试用例2和3是一直往下走的Ghost
+        # 更新样本数据的方法，就是从旧的样本数据中衍生出新的样本数据
+        for index,particle in enumerate(self.particles):
+            # 在项目说明中提示我们要降低对self.getPositionDistribution的调用次数
+            # 为了达到上述目的，我们预先设置一个以particle为键的字典，值为该particle对应的PositionDistribution
+            if particle not in PosDist.keys():
+                newPosDist = self.getPositionDistribution(gameState, particle)
+                PosDist[particle] = newPosDist
+            # 接着，我们就可以直接使用字典PosDist中的已经计算好的PositionDistribution数据进行采样
+            newParticle = PosDist[particle].sample()
+            # 最后用采样出来的数据代替原始的样本
+            self.particles[index] = newParticle
 
     def getBeliefDistribution(self):
         """
@@ -352,8 +457,15 @@ class ParticleFilter(InferenceModule):
         This function should return a normalized distribution.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
-
+        # 构造离散分布对象用于存放概率分布
+        belief = DiscreteDistribution()
+        # 接着只需要对以样本为键的字典对象进行+1计数，即可得到每一个样本出现的次数
+        for particle in self.particles:
+            belief[particle] += 1
+        # 最后，千万不要忘记归一化，并返回
+        belief.normalize()
+        # 注意，不要返回上面这句话，归一化函数没有返回值
+        return belief
 
 class JointParticleFilter(ParticleFilter):
     """
@@ -380,7 +492,17 @@ class JointParticleFilter(ParticleFilter):
         """
         self.particles = []
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # 所谓联合采样，就是采样空间中的数据，不再是一个单独的值，而是若干数据的组合
+        # 假设有4个鬼怪，则采样数据中的每一个样本都将会是一个四元组
+        # itertools.product的第一个参数表示取值范围，参数repeat表示元组中的元素数量
+        permutations = list(itertools.product(self.legalPositions, repeat=self.numGhosts))
+        # 题目要求打乱上述排列中的内容，以得到一个乱序的采样空间
+        random.shuffle(permutations)
+
+        # 依然按照Particle Filter算法的方法进行初始化，从给定的采样空间permutations中选取样本
+        self.particles += permutations*(self.numParticles//len(permutations))
+        # 依然要考虑特殊情况：样本总数不能整除空间尺寸，比如空间范围为[1,10]，但是样本数量为95
+        self.particles += permutations[:(self.numParticles%len(permutations))]
 
     def addGhostAgent(self, agent):
         """
@@ -413,7 +535,27 @@ class JointParticleFilter(ParticleFilter):
         the DiscreteDistribution may be useful.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # 算法思想与Particle Filter类似，只不过概率的计算方法要考虑到多个鬼怪的组合
+        # 获取吃豆人的位置
+        pacmanPosition = gameState.getPacmanPosition()
+        # 建立新的离散分布对象以存储新的置信网络数据
+        newPD = DiscreteDistribution()
+        # 本算法通过观察样本的概率，以更新置信网络中的数据
+        for ghostPositions in self.particles:
+            # 利用累乘算法，求出4个鬼怪均出现在样本所指位置的概率
+            prob = 1
+            for i in range(self.numGhosts):
+                prob *= self.getObservationProb(observation[i], pacmanPosition, \
+                                                ghostPositions[i], self.getJailPosition(i))
+            newPD[ghostPositions] += prob
+        # 根据注释的提示，需要考虑特殊情况，即置所有样本的概率总和为0，就调用初始化方法
+        if newPD.total()==0:
+            self.initializeUniformly(gameState)
+        else:
+            # 最后，将置信网络进行归一化
+            newPD.normalize()
+            # 再次生成新的样本(因为置信网络中的数据发生了变化，所以必须重新采样，以计算新的置信网络)
+            self.particles = [newPD.sample() for _ in range(self.numParticles)]
 
     def elapseTime(self, gameState):
         """
@@ -426,8 +568,11 @@ class JointParticleFilter(ParticleFilter):
 
             # now loop through and update each entry in newParticle...
             "*** YOUR CODE HERE ***"
-            raiseNotDefined()
-
+            # 基本思想就是将下一步鬼怪可能出现位置作为样本，按照给定的离散分布规律放在self.particles中
+            # 与之前Particle Filter算法不一样的是，此处的样本是一个包含若干鬼怪位置的元组
+            for i in range(self.numGhosts):
+                newPosDist = self.getPositionDistribution(gameState, newParticle, i, self.ghostAgents[i])
+                newParticle[i] = newPosDist.sample()
             """*** END YOUR CODE HERE ***"""
             newParticles.append(tuple(newParticle))
         self.particles = newParticles

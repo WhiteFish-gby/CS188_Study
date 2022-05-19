@@ -144,3 +144,16 @@ class GreedyBustersAgent(BustersAgent):
             [beliefs for i, beliefs in enumerate(self.ghostBeliefs)
              if livingGhosts[i+1]]
         "*** YOUR CODE HERE ***"
+        # 求所有鬼怪在地图中最有可能出现的位置
+        # LGPD.argMax()指的是在所谓位置的离散分布中概率最大的那个，即鬼怪最有可能存在的位置
+        GhostPositions = [LGPD.argMax() for LGPD in livingGhostPositionDistributions]
+        # 从上述位置中求出离Pacman最近的鬼怪
+        nearestGhost = min(GhostPositions, key=
+                           lambda ghostPos:self.distancer.getDistance(pacmanPosition, ghostPos))
+        # 既然最近的鬼怪已经求出来了，那么就需要找到最合适的动作，即按照给定的action可以让吃豆人离nearestGhost更近
+        action = min(legal, key=
+                     lambda a:self.distancer.getDistance( \
+                         Actions.getSuccessor(pacmanPosition,a), nearestGhost))
+        # 最后，返回这个action即可
+        return action
+
